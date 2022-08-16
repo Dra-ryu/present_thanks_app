@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 void main() {
   return runApp(
     MaterialApp(
-      print()
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
         appBar: AppBar(
-          title: Text(x'ありがとうを贈ろう'),
+          title: Text('ありがとうを贈ろう'),
           titleTextStyle: TextStyle(
             color: Colors.black,
           ),
