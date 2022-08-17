@@ -1,9 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:present_thanks/stopwatch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -49,6 +53,7 @@ class _DicePageState extends State<DicePage> {
     setState(() {
       prefs.setString('housework', selectedHousework);
       prefs.setString('partnerName', isSelectedItem!);
+      prefs.setInt('currentPoint', currentPoint);
     });
     String? ho = prefs.getString('housework');
     print('$hoアイウエオ');
@@ -78,6 +83,31 @@ class _DicePageState extends State<DicePage> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  List searchedInformation = [];
+  final _userInformations = FirebaseFirestore.instance.collection('users');
+
+  void init() async {
+    print("あああ");
+    final QuerySnapshot snapshot = await _userInformations.where('userName', isEqualTo: 'test').get();
+    setState(() {
+      final List gaps = snapshot.docs.map((DocumentSnapshot document) {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        searchedInformation = [
+          data['userID'],
+          data['userName'],
+          data['point'],
+        ];
+      }).toList();
+    });
+    currentPoint = searchedInformation[2];
   }
 
   @override

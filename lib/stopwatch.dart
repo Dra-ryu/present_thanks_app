@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import "package:intl/intl.dart";
 import 'package:flutter/material.dart';
 import 'package:present_thanks/main.dart';
@@ -43,6 +45,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
   String selectedHousework = "aaa";
   String partnerName = "";
+  int currentPoint = 0;
 
   @override
   void initState() {
@@ -62,6 +65,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
     setState(() {
       selectedHousework = prefs.getString('housework')!;
       partnerName = prefs.getString('partnerName')!;
+      currentPoint = prefs.getInt('currentPoint')!;
     });
     print('$selectedHouseworkです！！');
   }
@@ -193,7 +197,11 @@ class _StopwatchPageState extends State<StopwatchPage> {
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
-            onPressed: () {
+            onPressed: () async {
+              FirebaseFirestore.instance.collection('users').doc('vejHRlsIUJbfUYWVe1Nz').update({
+                'point': currentPoint + houseworkMinutes,
+              });
+
               _StopButton();
               showAlertToFinish();
               print(_formatter.format(DiffTime));

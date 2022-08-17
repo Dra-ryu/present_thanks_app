@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "362820246165",
+    "project_id": "present-thanks-app",
+    "storage_bucket": "present-thanks-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362820246165:android:d022b2f42eec84095dd99c",
+        "android_client_info": {
+          "package_name": "com.ryunosuke.present_thanks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362820246165-kdujom6bcqcg5lsb6vu7niibo4q7dk9r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxRXymvmrjbcfENdfhX2MN80jHNoIM4nU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362820246165-kdujom6bcqcg5lsb6vu7niibo4q7dk9r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
