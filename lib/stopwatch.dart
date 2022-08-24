@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:present_thanks/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'housework_select.dart';
+
 class StopWatchApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -151,7 +153,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
                           onPressed: () {
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => MyApp())
+                                MaterialPageRoute(builder: (context) => houseworkSelect())
                             );
                           },
                           child: const Padding(
