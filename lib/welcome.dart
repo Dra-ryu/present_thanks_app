@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -77,7 +78,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               SizedBox(
                 width: 300,
                 child: ElevatedButton(
-                  child: const Text('登録'),
+                  child: const Text('ログイン'),
                   style: ElevatedButton.styleFrom(
                     primary: Colors.grey,
                     onPrimary: Colors.black,
@@ -153,6 +154,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   onPressed: () async {
                     try {
                       final newUser = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+
+                      await FirebaseFirestore.instance
+                          .collection('users').add({
+                        'point': 0,
+                        'userID': email,
+                      });
+
                       print("aaa");
                       if (newUser != null) {
                         Navigator.push(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:present_thanks/stopwatch.dart';
 import 'package:present_thanks/welcome.dart';
@@ -39,6 +40,8 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
 
   List<String> dropdownItems = ["原田龍之介", "原田", "龍之介"];
+  String uemail = '';
+
 
   // 入力した情報を一時的に保存する
   Future<void> _setData() async {
@@ -52,31 +55,6 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
     String? ho = prefs.getString('housework');
     print('$hoアイウエオ');
   }
-
-  // ログインしているユーザーを認証する
-  // final _auth = FirebaseAuth.instance;
-  // User loggedInUser;
-  // final currentUser = loggedInUser.email;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //
-  //   getCurrentUser();
-  // }
-  //
-  // void getCurrentUser() async {
-  //   try{
-  //     final user = await _auth.currentUser();
-  //     if (user != null) {
-  //       loggedInUser = user;
-  //       print(loggedInUser.email);
-  //     }
-  //   }
-  //   catch (e) {
-  //     print(e);
-  //   }
-  // }
 
   void change_button_state(houseworkName) {
     return setState((){
@@ -113,10 +91,21 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   List searchedInformation = [];
   final _userInformations = FirebaseFirestore.instance.collection('users');
 
+  final _auth = FirebaseAuth.instance;
+
   void init() async {
-    print("あああ");
-    final QuerySnapshot snapshot = await _userInformations.where('userName', isEqualTo: 'test').get();
+    // ログイン情報を取り出す処理
+    final user = await _auth.currentUser!;
+    final uid = user.uid;
+    uemail = user.email!;
+    print("あああああ");
+    print(uid);
+    print(uemail);
+
+    // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
+    final QuerySnapshot snapshot = await _userInformations.where('userName', isEqualTo: uemail).get();
     setState(() {
+
       final List gaps = snapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
         searchedInformation = [
@@ -127,6 +116,12 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
       }).toList();
     });
     currentPoint = searchedInformation[2];
+  }
+
+  // Todo ユーザー情報を取得する
+  void getLoginedUser() {
+    final user = _auth.currentUser;
+    final userId = user?.uid;
   }
 
   @override
@@ -141,7 +136,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           color: Color(0xFFc4f4fc),
           child: Column(
             children: [
-              Text('あなたのポイントは'),
+              Text('$uemailさんのポイントは'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -235,6 +230,22 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             },
           ),
         ),
+
+        SizedBox(
+          width: 300,
+          child: ElevatedButton(
+            child: const Text('ログインのテスト'),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.grey,
+              onPrimary: Colors.black,
+              shape: const StadiumBorder(),
+            ),
+            onPressed: ()  {
+              getCurrentUser();
+            },
+          ),
+        ),
+
       ],
     );
   }
