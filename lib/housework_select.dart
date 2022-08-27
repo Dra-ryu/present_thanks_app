@@ -5,6 +5,8 @@ import 'package:present_thanks/stopwatch.dart';
 import 'package:present_thanks/welcome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'friends.dart';
+
 class houseworkSelect extends StatelessWidget {
 
   @override
@@ -234,14 +236,17 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
         SizedBox(
           width: 300,
           child: ElevatedButton(
-            child: const Text('ログインのテスト'),
+            child: const Text('フレンド追加テスト'),
             style: ElevatedButton.styleFrom(
               primary: Colors.grey,
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
             onPressed: ()  {
-              getCurrentUser();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Friends())
+              );
             },
           ),
         ),
