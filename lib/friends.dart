@@ -36,6 +36,19 @@ class FriendAddState extends State<FriendAdd> {
   String inputFriendEmail = '';
   List searchedInformation = ['a', 'b', 'c'];
   final _userInformations = FirebaseFirestore.instance.collection('users');
+  final _auth = FirebaseAuth.instance;
+  String loggedInUserEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  void init() async {
+    final user = await _auth.currentUser!;
+    loggedInUserEmail = user.email!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,8 +101,8 @@ class FriendAddState extends State<FriendAdd> {
 
                 await FirebaseFirestore.instance
                     .collection('friends').add({
-                  'userID': // Todo ログインしているユーザーのemailをfirestoreに入力する
-                  'friendID': inputFriendEmail
+                  'userID': loggedInUserEmail,
+                  'friendID': inputFriendEmail,
                 });
 
                 // // 該当のメールアドレスがなかった場合

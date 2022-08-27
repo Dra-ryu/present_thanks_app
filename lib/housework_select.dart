@@ -41,6 +41,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   String selectedHousework = '';
   int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
 
+  // todo 取り出したフレンドの情報をこのリストに格納していく
   List<String> dropdownItems = ["原田龍之介", "原田", "龍之介"];
   String uemail = '';
 
@@ -91,7 +92,9 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   }
 
   List searchedInformation = [];
+  List friendsInformation = [];
   final _userInformations = FirebaseFirestore.instance.collection('users');
+  final _friendInformations = FirebaseFirestore.instance.collection('friends');
 
   final _auth = FirebaseAuth.instance;
 
@@ -105,19 +108,39 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
     print(uemail);
 
     // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
-    final QuerySnapshot snapshot = await _userInformations.where('userName', isEqualTo: uemail).get();
+    final QuerySnapshot snapshot = await _userInformations.where('userID', isEqualTo: uemail).get();
+    final QuerySnapshot friendSnapshot = await _friendInformations.where('userID', isEqualTo: uemail).get();
     setState(() {
 
       final List gaps = snapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
         searchedInformation = [
           data['userID'],
-          data['userName'],
           data['point'],
         ];
       }).toList();
+
+      //
+      FirebaseFirestore.instance.collection('friends')..where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
+        snapshot.docs.forEach((doc) {
+          /// usersコレクションのドキュメントIDを取得する
+          print(doc.id);
+          /// 取得したドキュメントIDのフィールド値nameの値を取得する
+          print(doc.get('friendID'));
+        });
+      });
+
+      final List aaa = friendSnapshot.docs.map((DocumentSnapshot document) {
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        friendsInformation = [
+          data['friendID'],
+        ];
+      }).toList();
+      print('あああ$searchedInformation');
+      print('いいい$friendSnapshot');
     });
-    currentPoint = searchedInformation[2];
+    currentPoint = searchedInformation[1];
+
   }
 
   // Todo ユーザー情報を取得する
