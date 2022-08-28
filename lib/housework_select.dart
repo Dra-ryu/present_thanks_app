@@ -42,7 +42,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
 
   // todo 取り出したフレンドの情報をこのリストに格納していく
-  List<String> dropdownItems = ["原田龍之介", "原田", "龍之介"];
+  List<String> dropdownItems = [];
   String uemail = '';
 
 
@@ -95,6 +95,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   List friendsInformation = [];
   final _userInformations = FirebaseFirestore.instance.collection('users');
   final _friendInformations = FirebaseFirestore.instance.collection('friends');
+  int friendCounter = 0;
 
   final _auth = FirebaseAuth.instance;
 
@@ -127,6 +128,9 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           print(doc.id);
           /// 取得したドキュメントIDのフィールド値nameの値を取得する
           print(doc.get('friendID'));
+          dropdownItems.add(doc.get('friendID'));
+          print(dropdownItems);
+          friendCounter++;
         });
       });
 
@@ -192,27 +196,14 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             display_buttons("送迎"),
           ],
         ),
-        DropdownButton(
-          items: [
-            DropdownMenuItem(
-              child: Text(dropdownItems[0]),
-              value: dropdownItems[0],
-            ),
-            DropdownMenuItem(
-              child: Text(dropdownItems[1]),
-              value: dropdownItems[1],
-            ),
-            DropdownMenuItem(
-              child: Text(dropdownItems[2]),
-              value: dropdownItems[2],
-            ),
-          ],
+        DropdownButton<String>(
+          value: isSelectedItem,
+          items: dropdownItems.map((String list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
           onChanged: (String? value){
             setState(() {
               isSelectedItem = value;
             });
           },
-          value: isSelectedItem,
 
         ),
 
