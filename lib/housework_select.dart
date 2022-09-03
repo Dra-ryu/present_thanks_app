@@ -37,7 +37,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   double button_opacity = 1;
 
   bool _pressing = false;
-  String? isSelectedItem = '原田龍之介';
+  String? isSelectedItem;
   String selectedHousework = '';
   int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
 
@@ -108,6 +108,21 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
     print(uid);
     print(uemail);
 
+    setState(() {
+      FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
+        snapshot.docs.forEach((doc) {
+          /// usersコレクションのドキュメントIDを取得する
+          print(doc.id);
+          /// 取得したドキュメントIDのフィールド値nameの値を取得する
+          print(doc.get('friendID'));
+          dropdownItems.add(doc.get('friendID'));
+          print("アイウエオ");
+          print(dropdownItems);
+          friendCounter++;
+        });
+      });
+    });
+
     // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
     final QuerySnapshot snapshot = await _userInformations.where('userID', isEqualTo: uemail).get();
     final QuerySnapshot friendSnapshot = await _friendInformations.where('userID', isEqualTo: uemail).get();
@@ -120,19 +135,6 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           data['point'],
         ];
       }).toList();
-
-      //
-      FirebaseFirestore.instance.collection('friends')..where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
-        snapshot.docs.forEach((doc) {
-          /// usersコレクションのドキュメントIDを取得する
-          print(doc.id);
-          /// 取得したドキュメントIDのフィールド値nameの値を取得する
-          print(doc.get('friendID'));
-          dropdownItems.add(doc.get('friendID'));
-          print(dropdownItems);
-          friendCounter++;
-        });
-      });
 
       final List aaa = friendSnapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -198,13 +200,13 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
         ),
         DropdownButton<String>(
           value: isSelectedItem,
-          items: dropdownItems.map((String list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
+          items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
+
           onChanged: (String? value){
             setState(() {
               isSelectedItem = value;
             });
           },
-
         ),
 
         SizedBox(

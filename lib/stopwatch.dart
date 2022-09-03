@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import "package:intl/intl.dart";
 import 'package:flutter/material.dart';
@@ -48,6 +49,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
   String selectedHousework = "aaa";
   String partnerName = "";
   int currentPoint = 0;
+  String uid = "";
 
   @override
   void initState() {
@@ -60,9 +62,17 @@ class _StopwatchPageState extends State<StopwatchPage> {
     init();
   }
 
-  // shared_preferenceから値を取得する
+  final _auth = FirebaseAuth.instance;
+  String uemail = '';
+  final _userInformations = FirebaseFirestore.instance.collection('users');
+
   void init() async {
-    print("アイウエオ");
+    // ログインしているユーザーの情報を取得する
+    final user = await _auth.currentUser!;
+    uid = user.uid;
+    uemail = user.email!;
+
+    // shared_preferenceから値を取得する
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       selectedHousework = prefs.getString('housework')!;
@@ -200,7 +210,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
               shape: const StadiumBorder(),
             ),
             onPressed: () async {
-              FirebaseFirestore.instance.collection('users').doc('vejHRlsIUJbfUYWVe1Nz').update({
+              FirebaseFirestore.instance.collection('users').doc(uid).update({
                 'point': currentPoint + houseworkMinutes,
               });
 
@@ -258,7 +268,3 @@ class _StopwatchPageState extends State<StopwatchPage> {
     );
   }
 }
-
-
-
-

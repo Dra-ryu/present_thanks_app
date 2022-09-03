@@ -175,8 +175,14 @@ class HomeState extends State<Home> {
                   try {
                     final newUser = await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
+
+                    // 上のFirebaseAuthから、uidを取得する変数を定義
+                    final user = newUser.user;
+                    final uuid = user?.uid;
+                    // usersコレクションを作成して、uidとドキュメントidを一致させるプログラムを定義
                     await FirebaseFirestore.instance
-                        .collection('users').add({
+                        .collection('users').doc(uuid).set({
+                      'uid': uuid,
                       'point': 0,
                       'userID': email,
                     });
