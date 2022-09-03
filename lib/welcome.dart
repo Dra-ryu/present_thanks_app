@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:present_thanks/send_thanks.dart';
 import 'housework_select.dart';
 
 class RegistrationScreen extends StatelessWidget {
@@ -221,7 +222,7 @@ class HomeState extends State<Home> {
                 onPressed: () async {
                   Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => houseworkSelect())
+                      MaterialPageRoute(builder: (context) => SendThanks())
                   );
                 }
               ),

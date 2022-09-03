@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:present_thanks/send_thanks.dart';
 import 'package:present_thanks/stopwatch.dart';
 import 'package:present_thanks/welcome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,12 +37,10 @@ class HouseworkSelectPage extends StatefulWidget {
 class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   double button_opacity = 1;
 
-  bool _pressing = false;
   String? isSelectedItem;
   String selectedHousework = '';
   int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
 
-  // todo 取り出したフレンドの情報をこのリストに格納していく
   List<String> dropdownItems = [];
   String uemail = '';
 
@@ -198,15 +197,21 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             display_buttons("送迎"),
           ],
         ),
-        DropdownButton<String>(
-          value: isSelectedItem,
-          items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
-
-          onChanged: (String? value){
-            setState(() {
-              isSelectedItem = value;
-            });
-          },
+        Divider(),  // 横線を入れる処理
+        SizedBox(
+          width: size.width*0.8,
+          child: DropdownButton<String>(
+            alignment: Alignment.center,
+            value: isSelectedItem,
+            items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
+            hint: Text('家事をする相手を選択してください'),
+            onChanged: (String? value){
+              setState(() {
+                isSelectedItem = value;
+              });
+            },
+            isExpanded: true,
+          ),
         ),
 
         SizedBox(
@@ -262,6 +267,25 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => Friends())
+              );
+            },
+          ),
+        ),
+
+        SizedBox(
+          width: 300,
+          child: ElevatedButton(
+            child: const Text('ありがとうを贈るテスト'),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.grey,
+              onPrimary: Colors.black,
+              shape: const StadiumBorder(),
+            ),
+            onPressed: ()  {
+              _setData();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SendThanks())
               );
             },
           ),

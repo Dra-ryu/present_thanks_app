@@ -114,12 +114,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
     final Size size = MediaQuery.of(context).size;
 
-    var PageTitleWidget = Container(
-      height: size.height*0.1,
-      width: double.infinity,
-      color: Colors.black,
-    );
-
     var DiffTime = DateTime.fromMillisecondsSinceEpoch(NowTime - StartTime).toUtc();
     var houseworkMinutes = DiffTime.hour * 60 + DiffTime.minute;
 
@@ -192,7 +186,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
           child: ElevatedButton(
             child: const Text('開始'),
             style: ElevatedButton.styleFrom(
-              primary: Colors.green,
+              primary: Color(0xFF04a404),
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
@@ -205,7 +199,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
           child: ElevatedButton(
             child: const Text('終了'),
             style: ElevatedButton.styleFrom(
-              primary: Colors.red,
+              primary: Color(0xFFf4bc2c),
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
@@ -242,20 +236,24 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
     var InfoWidget = Column(
       children: [
+        Container(
+          height: size.height*0.02,
+        ),
         Text(
           '家事の種類：$selectedHousework',
           style: TextStyle(fontSize: 25),
         ),
+        Divider(),
         Text(
           '相手の名前：$partnerName',
           style: TextStyle(fontSize: 25),
         ),
+        Divider(),
       ],
     );
 
     return Column(
       children: <Widget>[
-        PageTitleWidget,
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
