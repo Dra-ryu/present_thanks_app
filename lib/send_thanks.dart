@@ -11,6 +11,9 @@ class SendThanks extends StatelessWidget {// static const String id = 'registrat
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: 'Murecho',
+      ),
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
         appBar: Header(),
@@ -35,7 +38,7 @@ class HomeState extends State<Home> {
 
   int counter = 0;
   String uid = "";
-  String? isSelectedItem;
+  String? selectedPartner;
   List<String> dropdownItems = [];
   String uemail = '';
   int currentPoint = 0;
@@ -44,7 +47,9 @@ class HomeState extends State<Home> {
 
   void incrementCounter() {
     setState(() {
-      counter++;
+      if (counter < 20) {
+        counter++;
+      }
     });
   }
 
@@ -68,42 +73,31 @@ class HomeState extends State<Home> {
       currentPoint = prefs.getInt('currentPoint')!;
     });
 
-    print("ああああがおj");
     setState(() {
       FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
-          // usersコレクションのドキュメントIDを取得する
-          print(doc.id);
-          // 取得したドキュメントIDのフィールド値nameの値を取得する
-          print(doc.get('friendID'));
           dropdownItems.add(doc.get('friendID'));
-          print("アイウエオ");
-          print(dropdownItems);
         });
       });
     });
-    print(dropdownItems);
   }
 
   void getFriendDocID() async {
     setState((){
       FirebaseFirestore.instance.collection('users').get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
-          print("🥒");
           // ループの中で、情報が一致したときのdoc idを取り出せば良い
-          if (doc.get('userID') == isSelectedItem) {
+          if (doc.get('userID') == selectedPartner) {
             setState((){
               friendDocID = doc.id;
             });
-            print("🍅");
-            print(friendDocID);
           }
         });
       });
     });
 
     // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
-    final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('userID', isEqualTo: isSelectedItem).get();
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('userID', isEqualTo: selectedPartner).get();
     setState((){
       final List gaps = snapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -114,6 +108,87 @@ class HomeState extends State<Home> {
       currentPoint = searchedInformation[0];
     });
   }
+
+  getCounterText(size) {
+    if (counter == 20) {
+      return Text('$counter',
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: size.height*0.03,
+          fontWeight: FontWeight.bold,
+          ),
+      );
+    }
+    else {
+      return Text('$counter',
+          style: TextStyle(
+            fontSize: size.height*0.025,
+          ),
+      );
+    }
+  }
+
+  Future<void> showAlertToFinish() {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Container(
+              width: 311.0,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blueAccent, width: 3),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top:10),
+                  ),
+                  Text('$selectedPartnerさんに'),
+                  Text('$counterありがとうポイントを贈りました！'),
+                  const SizedBox(
+                    height: 24.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shadowColor: Colors.grey,
+                          elevation: 5,
+                          primary: Colors.blueAccent,
+                          onPrimary: Colors.white,
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => houseworkSelect())
+                          );
+                        },
+                        child: const Padding(
+                          padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 36),
+                          child: Text('OK'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 24.0,
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -126,18 +201,24 @@ class HomeState extends State<Home> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            DropdownButton<String>(
-              value: isSelectedItem,
-              items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
-
-              onChanged: (String? value){
-                setState(() {
-                  isSelectedItem = value;
-                  getFriendDocID();
-                });
-              },
+            Center(
+              child: SizedBox(
+                width: size.width*0.8,
+                child: DropdownButton<String>(
+                  alignment: Alignment.center,
+                  value: selectedPartner,
+                  items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
+                  hint: Text('家事をする相手を選択してください'),
+                  onChanged: (String? value){
+                    setState(() {
+                      selectedPartner = value;
+                    });
+                    getFriendDocID();
+                  },
+                  isExpanded: true,
+                ),
+              ),
             ),
-            Text('$counter'),
             Flexible(
               child: TextButton(
                 onPressed: (){
@@ -153,30 +234,33 @@ class HomeState extends State<Home> {
                 ),
               ),
             ),
+            Row(
+              children: [
+                Text('贈るありがとうポイント：',
+                  textAlign: TextAlign.center
+                ),
+                getCounterText(size),
+              ],
+            ),
             SizedBox(
               height: size.height * 0.05,
             ),
-
             SizedBox(
               width: 300,
               child: ElevatedButton(
                   child: const Text('決定'),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.grey,
-                    onPrimary: Colors.black,
+                    primary: Color(0xFF54c404),
+                    onPrimary: Colors.white,
                     shape: const StadiumBorder(),
                   ),
                   // ボタン押されたときにユーザー登録する
                   onPressed: () {
-                    print('はいはいはい');
                     print(friendDocID);
                     FirebaseFirestore.instance.collection('users').doc(friendDocID).update({
                       'point': currentPoint + counter,
                     });
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => houseworkSelect())
-                    );
+                    showAlertToFinish();
                   }
               ),
             ),

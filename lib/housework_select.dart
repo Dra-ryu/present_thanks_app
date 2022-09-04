@@ -29,54 +29,18 @@ class HouseworkSelectPage extends StatefulWidget {
 
 
 class HouseworkSelectPageState extends State<HouseworkSelectPage> {
-  double button_opacity = 1;
 
-  String? isSelectedItem;
+  String? selectedPartner;
   String selectedHousework = '';
-  int currentPoint = 0;  // Todo firebaseからポイントを取得する処理
-
+  int currentPoint = 0;
   List<String> dropdownItems = [];
   String uemail = '';
-
-
-  // 入力した情報を一時的に保存する
-  Future<void> _setData() async {
-    print("aaccac");
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.setString('housework', selectedHousework);
-      prefs.setString('partnerName', isSelectedItem!);
-      prefs.setInt('currentPoint', currentPoint);
-    });
-    String? ho = prefs.getString('housework');
-    print('$hoアイウエオ');
-  }
-
-  void change_button_state(houseworkName) {
-    return setState((){
-      selectedHousework = houseworkName;
-      button_opacity = 0.9;
-      print("bbb");
-    });
-  }
-
-  Expanded display_buttons(houseworkName) {
-    return Expanded(
-      child: TextButton(
-        onPressed: (){
-          change_button_state(houseworkName);
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: Image.asset("images/$houseworkName.png"),
-        ),
-        style: TextButton.styleFrom(
-          primary: Colors.transparent,
-          elevation: 0,
-        ),
-      ),
-    );
-  }
+  List searchedInformation = [];
+  List friendsInformation = [];
+  final _userInformations = FirebaseFirestore.instance.collection('users');
+  final _friendInformations = FirebaseFirestore.instance.collection('friends');
+  int friendCounter = 0;
+  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -84,33 +48,15 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
     init();
   }
 
-  List searchedInformation = [];
-  List friendsInformation = [];
-  final _userInformations = FirebaseFirestore.instance.collection('users');
-  final _friendInformations = FirebaseFirestore.instance.collection('friends');
-  int friendCounter = 0;
-
-  final _auth = FirebaseAuth.instance;
-
   void init() async {
     // ログイン情報を取り出す処理
     final user = await _auth.currentUser!;
-    final uid = user.uid;
     uemail = user.email!;
-    print("あああああ");
-    print(uid);
-    print(uemail);
 
     setState(() {
       FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
-          /// usersコレクションのドキュメントIDを取得する
-          print(doc.id);
-          /// 取得したドキュメントIDのフィールド値nameの値を取得する
-          print(doc.get('friendID'));
           dropdownItems.add(doc.get('friendID'));
-          print("アイウエオ");
-          print(dropdownItems);
           friendCounter++;
         });
       });
@@ -135,17 +81,44 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           data['friendID'],
         ];
       }).toList();
-      print('あああ$searchedInformation');
-      print('いいい$friendSnapshot');
     });
     currentPoint = searchedInformation[1];
 
   }
 
-  // Todo ユーザー情報を取得する
-  void getLoginedUser() {
-    final user = _auth.currentUser;
-    final userId = user?.uid;
+  // 入力した情報を一時的に保存する
+  Future<void> _setData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString('housework', selectedHousework);
+      prefs.setString('partnerName', selectedPartner!);
+      prefs.setInt('currentPoint', currentPoint);
+    });
+  }
+
+  void change_button_state(houseworkName) {
+    return setState((){
+      selectedHousework = houseworkName;
+      print("bbb");
+    });
+  }
+
+  Expanded display_buttons(houseworkName) {
+    return Expanded(
+      child: TextButton(
+        onPressed: (){
+          change_button_state(houseworkName);
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Image.asset("images/$houseworkName.png"),
+        ),
+        style: TextButton.styleFrom(
+          primary: Colors.transparent,
+          elevation: 0,
+        ),
+      ),
+    );
   }
 
   @override
@@ -160,7 +133,8 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           color: Color(0xFFc4f4fc),
           child: Column(
             children: [
-              Text('$uemailさんのポイントは'),
+              Padding(padding: EdgeInsets.only(top: size.height*0.02)),
+              Text('$uemailさんのありがとうポイントは'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -176,7 +150,15 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             ],
           ),
         ),
-
+        Container(
+          padding: EdgeInsets.only(left: size.width*0.03),
+          width: double.infinity,
+          child: Text('家事を選択してください',
+          style: TextStyle(
+            fontSize: size.height*0.025,
+          ),
+          textAlign: TextAlign.left),
+        ),
         Row(
           children: [
             display_buttons("料理"),
@@ -196,12 +178,12 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           width: size.width*0.8,
           child: DropdownButton<String>(
             alignment: Alignment.center,
-            value: isSelectedItem,
+            value: selectedPartner,
             items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
             hint: Text('家事をする相手を選択してください'),
             onChanged: (String? value){
               setState(() {
-                isSelectedItem = value;
+                selectedPartner = value;
               });
             },
             isExpanded: true,
@@ -213,8 +195,8 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           child: ElevatedButton(
             child: const Text('決定'),
             style: ElevatedButton.styleFrom(
-              primary: Colors.grey,
-              onPrimary: Colors.black,
+              primary: Color(0xFF54c404),
+              onPrimary: Colors.white,
               shape: const StadiumBorder(),
             ),
             onPressed: ()  {

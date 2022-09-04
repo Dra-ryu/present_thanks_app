@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:present_thanks/footer.dart';
 import 'package:present_thanks/header.dart';
 
+import 'housework_select.dart';
+
 class Friends extends StatelessWidget {
 
   @override
@@ -43,6 +45,68 @@ class FriendAddState extends State<FriendAdd> {
     final user = await _auth.currentUser!;
     loggedInUserEmail = user.email!;
   }
+
+  Future<void> showAlertToRegster() {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Container(
+              width: 311.0,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blueAccent, width: 3),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top:10),
+                  ),
+                  Text('$inputFriendEmailさんを'),
+                  Text('パートナーに登録しました！'),
+                  const SizedBox(
+                    height: 24.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shadowColor: Colors.grey,
+                          elevation: 5,
+                          primary: Colors.blueAccent,
+                          onPrimary: Colors.white,
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => houseworkSelect())
+                          );
+                        },
+                        child: const Padding(
+                          padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 36),
+                          child: Text('OK'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 24.0,
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +177,7 @@ class FriendAddState extends State<FriendAdd> {
                         'userID': loggedInUserEmail,
                         'friendID': inputFriendEmail,
                       });
-
+                      showAlertToRegster();
                       // // 該当のメールアドレスがなかった場合
                       // if (searchedInformation == ['a', 'b', 'c']) {
                       //
@@ -121,7 +185,6 @@ class FriendAddState extends State<FriendAdd> {
                     },
                   ),
                 ),
-                Text(searchedInformation[0]),
               ],
             ),
           ),

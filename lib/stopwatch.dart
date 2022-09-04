@@ -5,7 +5,6 @@ import "package:intl/intl.dart";
 import 'package:flutter/material.dart';
 import 'package:present_thanks/header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'footer.dart';
 import 'housework_select.dart';
 
 class StopWatchApp extends StatelessWidget {
@@ -57,7 +56,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
   final _auth = FirebaseAuth.instance;
   String uemail = '';
-  final _userInformations = FirebaseFirestore.instance.collection('users');
 
   void init() async {
     // ログインしているユーザーの情報を取得する
@@ -179,7 +177,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
           child: ElevatedButton(
             child: const Text('開始'),
             style: ElevatedButton.styleFrom(
-              primary: Color(0xFF04a404),
+              primary: Color(0xFF54c404),
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
@@ -203,9 +201,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
               _StopButton();
               showAlertToFinish();
-              print(_formatter.format(DiffTime));
-              print(DiffTime.minute);
-              print(houseworkMinutes);
             },
     ),
     ),
