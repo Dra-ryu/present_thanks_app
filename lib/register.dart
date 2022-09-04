@@ -2,10 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:present_thanks/header.dart';
-import 'package:present_thanks/register.dart';
 import 'housework_select.dart';
 
-class Login extends StatelessWidget {
+class Register extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -14,24 +13,7 @@ class Login extends StatelessWidget {
         backgroundColor: Color(0xFFfcf4c4),
         appBar: Header(),
         body: Home(),
-        bottomNavigationBar: FooterOfWelcome(),
       ),
-    );
-  }
-}
-
-class FooterOfWelcome extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      child: Text('アカウント作成はこちらから'),
-      onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => Register())
-        );
-      },
     );
   }
 }
@@ -73,7 +55,11 @@ class HomeState extends State<Home> {
               height: size.height * 0.05,
             ),
 
-            //ログイン部分
+            // ログイン部分と登録部分の間
+            SizedBox(
+              height: size.height * 0.01,
+            ),
+            // 登録部分
             TextFormField(
               textAlign: TextAlign.center,
               keyboardType: TextInputType.emailAddress,
@@ -86,7 +72,7 @@ class HomeState extends State<Home> {
               ),
             ),
             SizedBox(
-              height: size.height * 0.02,
+              height: 8.0,
             ),
             TextFormField(
               obscureText: true,
@@ -101,40 +87,49 @@ class HomeState extends State<Home> {
             ),
             Container(
               // メッセージ表示
-              child: Text(infoLoginText),
+              child: Text(infoRegisterText),
             ),
             SizedBox(
               width: 300,
               child: ElevatedButton(
-                child: const Text('ログイン'),
+                child: const Text('登録'),
                 style: ElevatedButton.styleFrom(
                   primary: Colors.grey,
                   onPrimary: Colors.black,
                   shape: const StadiumBorder(),
                 ),
-                // ログインの確認
+                // ボタン押されたときにユーザー登録する
                 onPressed: () async {
+                  print(size);
                   try {
-                    await _auth.signInWithEmailAndPassword(
-                        email: email,
-                        password: password
-                    );
-                    // ログイン成功の場合
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => houseworkSelect())
-                    );
+                    final newUser = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+
+
+                    // 上のFirebaseAuthから、uidを取得する変数を定義
+                    final user = newUser.user;
+                    final uuid = user?.uid;
+                    // usersコレクションを作成して、uidとドキュメントidを一致させるプログラムを定義
+                    await FirebaseFirestore.instance
+                        .collection('users').doc(uuid).set({
+                      'uid': uuid,
+                      'point': 0,
+                      'userID': email,
+                    });
+
+                    print("aaa");
+                    if (newUser != null) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => houseworkSelect())
+                      );
+                    }
                   }
                   catch (e) {
                     // ユーザー登録に失敗した場合
                     setState(() {
-                      infoLoginText = "登録に失敗しました：${e.toString()}";
+                      infoRegisterText = "登録に失敗しました：${e.toString()}";
                     });
                   }
-
-                  print(email);
-                  print(password);
                 },
               ),
             ),

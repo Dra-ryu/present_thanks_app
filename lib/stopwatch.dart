@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import "package:intl/intl.dart";
 import 'package:flutter/material.dart';
-import 'package:present_thanks/main.dart';
+import 'package:present_thanks/header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'footer.dart';
 import 'housework_select.dart';
 
 class StopWatchApp extends StatelessWidget {
@@ -20,13 +19,7 @@ class StopWatchApp extends StatelessWidget {
 
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
-        appBar: AppBar(
-          title: Text('ありがとうを贈ろう'),
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-          ),
-          backgroundColor: Colors.white,
-        ),
+        appBar: Header(),
         body: StopwatchPage(),
       ),
     );

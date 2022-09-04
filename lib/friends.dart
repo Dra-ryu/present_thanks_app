@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:present_thanks/footer.dart';
+import 'package:present_thanks/header.dart';
 
 class Friends extends StatelessWidget {
 
@@ -9,14 +11,9 @@ class Friends extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
-        appBar: AppBar(
-          title: Text('ありがとうを贈ろう'),
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-          ),
-          backgroundColor: Colors.white,
-        ),
+        appBar: Header(),
         body: FriendAdd(),
+        bottomNavigationBar: Footer(currentPageIndex: 2),
       ),
     );
   }

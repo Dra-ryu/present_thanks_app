@@ -6,5 +6,5 @@ import 'package:present_thanks/welcome.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(RegistrationScreen());
+  runApp(Login());
 }

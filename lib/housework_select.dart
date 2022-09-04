@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:present_thanks/send_thanks.dart';
 import 'package:present_thanks/stopwatch.dart';
-import 'package:present_thanks/welcome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'friends.dart';
+import 'footer.dart';
+import 'header.dart';
 
 class houseworkSelect extends StatelessWidget {
 
@@ -15,14 +14,9 @@ class houseworkSelect extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
-        appBar: AppBar(
-          title: Text('ありがとうを贈ろう'),
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-          ),
-          backgroundColor: Colors.white,
-        ),
+        appBar: Header(),
         body: HouseworkSelectPage(),
+        bottomNavigationBar: Footer(currentPageIndex: 0),
       ),
     );
   }
@@ -232,65 +226,6 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             },
           ),
         ),
-
-        SizedBox(
-          width: 300,
-          child: ElevatedButton(
-            child: const Text('戻る'),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.grey,
-              onPrimary: Colors.black,
-              shape: const StadiumBorder(),
-            ),
-            onPressed: ()  {
-              print("aa");
-              print(selectedHousework);
-              print(isSelectedItem);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegistrationScreen())
-              );
-            },
-          ),
-        ),
-
-        SizedBox(
-          width: 300,
-          child: ElevatedButton(
-            child: const Text('フレンド追加テスト'),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.grey,
-              onPrimary: Colors.black,
-              shape: const StadiumBorder(),
-            ),
-            onPressed: ()  {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Friends())
-              );
-            },
-          ),
-        ),
-
-        SizedBox(
-          width: 300,
-          child: ElevatedButton(
-            child: const Text('ありがとうを贈るテスト'),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.grey,
-              onPrimary: Colors.black,
-              shape: const StadiumBorder(),
-            ),
-            onPressed: ()  {
-              _setData();
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SendThanks())
-              );
-            },
-          ),
-        ),
-
       ],
     );
   }

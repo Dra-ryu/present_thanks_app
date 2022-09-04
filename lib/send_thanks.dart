@@ -1,25 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:present_thanks/header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'footer.dart';
 import 'housework_select.dart';
 
-class SendThanks extends StatelessWidget {
-  // static const String id = 'registration_screen';
+class SendThanks extends StatelessWidget {// static const String id = 'registration_screen';
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
-        appBar: AppBar(
-          title: Text('ありがとうを贈ろう'),
-          titleTextStyle: TextStyle(
-            color: Colors.black,
-          ),
-          backgroundColor: Colors.white,
-        ),
+        appBar: Header(),
         body: Home(),
+        bottomNavigationBar: Footer(currentPageIndex: 1),
       ),
     );
   }
