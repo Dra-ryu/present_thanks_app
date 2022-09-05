@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:present_thanks/footer.dart';
 import 'package:present_thanks/header.dart';
 
@@ -26,14 +27,12 @@ class FriendAdd extends StatefulWidget {
   FriendAddState createState() => FriendAddState();
 }
 
-
 class FriendAddState extends State<FriendAdd> {
-
-  String inputFriendEmail = '';
-  List searchedInformation = ['a', 'b', 'c'];
+  String inputFriendName = '';
+  List searchedInformation = [];
   final _userInformations = FirebaseFirestore.instance.collection('users');
-  final _auth = FirebaseAuth.instance;
-  String loggedInUserEmail = '';
+  late String loggedInUserName;
+  late String loggedInUserID;
 
   @override
   void initState() {
@@ -42,8 +41,13 @@ class FriendAddState extends State<FriendAdd> {
   }
 
   void init() async {
-    final user = await _auth.currentUser!;
-    loggedInUserEmail = user.email!;
+    try {
+      final result = await LineSDK.instance.getProfile();
+      loggedInUserName = result.displayName;
+      loggedInUserID = result.userId;
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
   }
 
   Future<void> showAlertToRegster() {
@@ -67,7 +71,7 @@ class FriendAddState extends State<FriendAdd> {
                   Padding(
                     padding: const EdgeInsets.only(top:10),
                   ),
-                  Text('$inputFriendEmailさんを'),
+                  Text('$inputFriendNameさんを'),
                   Text('パートナーに登録しました！'),
                   const SizedBox(
                     height: 24.0,
@@ -137,10 +141,10 @@ class FriendAddState extends State<FriendAdd> {
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.emailAddress,
                   onChanged: (value) {
-                    inputFriendEmail = value;
+                    inputFriendName = value;
                   },
                   decoration: InputDecoration(
-                    hintText: '検索したいメールアドレスを入力してください',
+                    hintText: '検索したいLINEの名前を入力してください',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -157,8 +161,7 @@ class FriendAddState extends State<FriendAdd> {
                       shape: const StadiumBorder(),
                     ),
                     onPressed: ()  async {
-                      print(inputFriendEmail);
-                      final QuerySnapshot snapshot = await _userInformations.where('userID', isEqualTo: inputFriendEmail).get();
+                      final QuerySnapshot snapshot = await _userInformations.where('userName', isEqualTo: inputFriendName).get();
                       setState(() {
 
                         final List gaps = snapshot.docs.map((DocumentSnapshot document) {
@@ -170,18 +173,13 @@ class FriendAddState extends State<FriendAdd> {
                           ];
                         }).toList();
                       });
-                      print(searchedInformation);
-
                       await FirebaseFirestore.instance
                           .collection('friends').add({
-                        'userID': loggedInUserEmail,
-                        'friendID': inputFriendEmail,
+                        'userID': loggedInUserID,
+                        'friendID': searchedInformation[0],
+                        'friendName': searchedInformation[1],
                       });
                       showAlertToRegster();
-                      // // 該当のメールアドレスがなかった場合
-                      // if (searchedInformation == ['a', 'b', 'c']) {
-                      //
-                      // }
                     },
                   ),
                 ),

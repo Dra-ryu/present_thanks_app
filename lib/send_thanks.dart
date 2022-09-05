@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:present_thanks/header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'footer.dart';
@@ -37,13 +39,13 @@ class HomeState extends State<Home> {
   String infoRegisterText = '';
 
   int counter = 0;
-  String uid = "";
   String? selectedPartner;
   List<String> dropdownItems = [];
-  String uemail = '';
   int currentPoint = 0;
   String friendDocID = '';
   List searchedInformation = [];
+  late String loggedInUserName;
+  late String loggedInUserID;
 
   void incrementCounter() {
     setState(() {
@@ -59,24 +61,19 @@ class HomeState extends State<Home> {
     init();
   }
 
-  final _auth = FirebaseAuth.instance;
-
   void init() async {
-    // ログインしているユーザーの情報を取得する
-    final user = await _auth.currentUser!;
-    uemail = user.email!;
-    uid = user.uid;
-
-    // shared_preferenceから値を取得する
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currentPoint = prefs.getInt('currentPoint')!;
-    });
+    try {
+      final result = await LineSDK.instance.getProfile();
+      loggedInUserName = result.displayName;
+      loggedInUserID = result.userId;
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
 
     setState(() {
-      FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
+      FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: loggedInUserID).get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
-          dropdownItems.add(doc.get('friendID'));
+          dropdownItems.add(doc.get('friendName'));
         });
       });
     });
@@ -87,7 +84,7 @@ class HomeState extends State<Home> {
       FirebaseFirestore.instance.collection('users').get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
           // ループの中で、情報が一致したときのdoc idを取り出せば良い
-          if (doc.get('userID') == selectedPartner) {
+          if (doc.get('userName') == selectedPartner) {
             setState((){
               friendDocID = doc.id;
             });
@@ -97,7 +94,7 @@ class HomeState extends State<Home> {
     });
 
     // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
-    final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('userID', isEqualTo: selectedPartner).get();
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').where('userName', isEqualTo: selectedPartner).get();
     setState((){
       final List gaps = snapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -189,7 +186,6 @@ class HomeState extends State<Home> {
         });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;  // 画面のサイズを取得する
@@ -208,7 +204,7 @@ class HomeState extends State<Home> {
                   alignment: Alignment.center,
                   value: selectedPartner,
                   items: dropdownItems.map((list) => DropdownMenuItem(value: list, child: Text(list))).toList(),
-                  hint: Text('家事をする相手を選択してください'),
+                  hint: Text('贈る相手を選択してください'),
                   onChanged: (String? value){
                     setState(() {
                       selectedPartner = value;
@@ -218,6 +214,12 @@ class HomeState extends State<Home> {
                   isExpanded: true,
                 ),
               ),
+            ),
+            Center(
+                child: Padding(
+                  padding: EdgeInsets.only(top: size.height*0.01),
+                  child: Text('感謝の気持ちを込めて下のボタンを押しましょう！'),
+                )
             ),
             Flexible(
               child: TextButton(
@@ -235,6 +237,7 @@ class HomeState extends State<Home> {
               ),
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('贈るありがとうポイント：',
                   textAlign: TextAlign.center

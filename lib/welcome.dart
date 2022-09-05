@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:present_thanks/header.dart';
-import 'package:present_thanks/register.dart';
 import 'housework_select.dart';
 
 class Login extends StatelessWidget {
@@ -10,28 +9,12 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Color(0xFFfcf4c4),
         appBar: Header(),
         body: Home(),
-        bottomNavigationBar: FooterOfWelcome(),
       ),
-    );
-  }
-}
-
-class FooterOfWelcome extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      child: Text('アカウント作成はこちらから'),
-      onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => Register())
-        );
-      },
     );
   }
 }
@@ -42,7 +25,28 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  final _auth = FirebaseAuth.instance;
+
+  void _signIn() async {
+      final result = await LineSDK.instance.login();
+      // user id -> result.userProfile?.userId
+      // user name -> result.userProfile?.displayName
+      // user avatar -> result.userProfile?.pictureUrl
+      print(result.userProfile?.userId);
+
+      await FirebaseFirestore.instance
+          .collection('users').doc(result.userProfile?.userId).get().then((docSnapshot) =>
+      {
+        if (!docSnapshot.exists) {
+          FirebaseFirestore.instance.collection('users').doc(
+              result.userProfile?.userId).set({
+            'point': 0,
+            'userID': result.userProfile?.userId,
+            'userName': result.userProfile?.displayName,
+          })
+        }
+      });
+  }
+
   bool showSpinner = false;
   late String email;
   late String password;
@@ -74,30 +78,8 @@ class HomeState extends State<Home> {
             ),
 
             //ログイン部分
-            TextFormField(
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.emailAddress,
-              onChanged: (value) {
-                email = value;
-              },
-              decoration: InputDecoration(
-                hintText: 'メールアドレス',
-                border: OutlineInputBorder(),
-              ),
-            ),
             SizedBox(
               height: size.height * 0.02,
-            ),
-            TextFormField(
-              obscureText: true,
-              textAlign: TextAlign.center,
-              onChanged: (value) {
-                password = value;
-              },
-              decoration: InputDecoration(
-                hintText: 'パスワード',
-                border: OutlineInputBorder(),
-              ),
             ),
             Container(
               // メッセージ表示
@@ -106,35 +88,21 @@ class HomeState extends State<Home> {
             SizedBox(
               width: 300,
               child: ElevatedButton(
-                child: const Text('ログイン'),
+                child: const Text('LINEで登録・ログイン'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.grey,
-                  onPrimary: Colors.black,
+                  primary: Color(0xFF54c404),
+                  onPrimary: Colors.white,
                   shape: const StadiumBorder(),
                 ),
                 // ログインの確認
                 onPressed: () async {
-                  try {
-                    await _auth.signInWithEmailAndPassword(
-                        email: email,
-                        password: password
-                    );
-                    // ログイン成功の場合
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => houseworkSelect())
-                    );
-                  }
-                  catch (e) {
-                    // ユーザー登録に失敗した場合
-                    setState(() {
-                      infoLoginText = "登録に失敗しました：${e.toString()}";
-                    });
-                  }
-
-                  print(email);
-                  print(password);
+                  _signIn();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => houseworkSelect()
+                    )
+                  );
                 },
               ),
             ),

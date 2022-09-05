@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:present_thanks/stopwatch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'footer.dart';
 import 'header.dart';
 
@@ -18,6 +18,7 @@ class houseworkSelect extends StatelessWidget {
         body: HouseworkSelectPage(),
         bottomNavigationBar: Footer(currentPageIndex: 0),
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -27,20 +28,19 @@ class HouseworkSelectPage extends StatefulWidget {
   HouseworkSelectPageState createState() => HouseworkSelectPageState();
 }
 
-
 class HouseworkSelectPageState extends State<HouseworkSelectPage> {
 
   String? selectedPartner;
-  String selectedHousework = '';
+  String selectedHousework = '未選択';
   int currentPoint = 0;
   List<String> dropdownItems = [];
-  String uemail = '';
   List searchedInformation = [];
-  List friendsInformation = [];
   final _userInformations = FirebaseFirestore.instance.collection('users');
-  final _friendInformations = FirebaseFirestore.instance.collection('friends');
-  int friendCounter = 0;
-  final _auth = FirebaseAuth.instance;
+  String? loggedInUserName;
+  String? loggedInUserID;
+  bool _isHouseworkSelected = false;
+  bool _isPartnerSelected = false;
+
 
   @override
   void initState() {
@@ -48,45 +48,40 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
     init();
   }
 
+  // LINEのログイン情報を取得
   void init() async {
-    // ログイン情報を取り出す処理
-    final user = await _auth.currentUser!;
-    uemail = user.email!;
+    try {
+      final result = await LineSDK.instance.getProfile();
+      loggedInUserName = result.displayName;
+      loggedInUserID = result.userId;
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
 
     setState(() {
-      FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: uemail).get().then((QuerySnapshot snapshot) {
+      FirebaseFirestore.instance.collection('friends').where('userID', isEqualTo: loggedInUserID).get().then((QuerySnapshot snapshot) {
         snapshot.docs.forEach((doc) {
-          dropdownItems.add(doc.get('friendID'));
-          friendCounter++;
+          dropdownItems.add(doc.get('friendName'));
         });
       });
     });
 
     // ログインしているユーザーのポイントをcloud firestoreから取り出す処理
-    final QuerySnapshot snapshot = await _userInformations.where('userID', isEqualTo: uemail).get();
-    final QuerySnapshot friendSnapshot = await _friendInformations.where('userID', isEqualTo: uemail).get();
+    final QuerySnapshot snapshot = await _userInformations.where('userID', isEqualTo: loggedInUserID).get();
     setState(() {
 
-      final List gaps = snapshot.docs.map((DocumentSnapshot document) {
+      final List getUserInfo = snapshot.docs.map((DocumentSnapshot document) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
         searchedInformation = [
           data['userID'],
           data['point'],
         ];
       }).toList();
-
-      final List aaa = friendSnapshot.docs.map((DocumentSnapshot document) {
-        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-        friendsInformation = [
-          data['friendID'],
-        ];
-      }).toList();
     });
     currentPoint = searchedInformation[1];
-
   }
 
-  // 入力した情報を一時的に保存する
+  // 入力した情報を一時的に保存してストップウォッチ画面で示す処理
   Future<void> _setData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -99,7 +94,6 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
   void change_button_state(houseworkName) {
     return setState((){
       selectedHousework = houseworkName;
-      print("bbb");
     });
   }
 
@@ -108,6 +102,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
       child: TextButton(
         onPressed: (){
           change_button_state(houseworkName);
+          _isHouseworkSelected = true;
         },
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
@@ -134,7 +129,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           child: Column(
             children: [
               Padding(padding: EdgeInsets.only(top: size.height*0.02)),
-              Text('$uemailさんのありがとうポイントは'),
+              Text('あり贈さんのありがとうポイントは'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -173,6 +168,22 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             display_buttons("送迎"),
           ],
         ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('選択した家事：',
+              style: TextStyle(
+                fontSize: size.height*0.025,
+              ),
+            ),
+            Text('$selectedHousework',
+              style: TextStyle(
+                fontSize: size.height*0.025,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         Divider(),  // 横線を入れる処理
         SizedBox(
           width: size.width*0.8,
@@ -184,6 +195,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
             onChanged: (String? value){
               setState(() {
                 selectedPartner = value;
+                _isPartnerSelected = true;
               });
             },
             isExpanded: true,
@@ -199,7 +211,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
               onPrimary: Colors.white,
               shape: const StadiumBorder(),
             ),
-            onPressed: ()  {
+            onPressed: !_isHouseworkSelected || !_isPartnerSelected ? null : ()  {
               _setData();
               Navigator.push(
                   context,

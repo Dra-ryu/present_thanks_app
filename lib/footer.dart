@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:present_thanks/send_thanks.dart';
-
 import 'friends.dart';
 import 'housework_select.dart';
 
@@ -24,15 +23,13 @@ class FooterState extends State<Footer> {
     Icons.cleaning_services_outlined,
     Icons.favorite_border_outlined,
     Icons.group_add_outlined,
-    Icons.logout_outlined,
   ];
 
   // アイコン文字列
   static const _footerItemNames = [
     '家事選択',
-    '贈る',
+    'ありがとうを贈る',
     'パートナー',
-    'ログアウト',
   ];
 
   List pages = [
@@ -54,7 +51,7 @@ class FooterState extends State<Footer> {
     }
   }
 
-  /// インデックスのアイテムをアクティベートする
+  // インデックスのアイテムをアクティベート
   BottomNavigationBarItem _UpdateActiveState(int index) {
     return BottomNavigationBarItem(
         icon: Icon(
@@ -65,7 +62,7 @@ class FooterState extends State<Footer> {
     );
   }
 
-  /// インデックスのアイテムをディアクティベートする
+  // インデックスのアイテムをディアクティベート
   BottomNavigationBarItem _UpdateDeactiveState(int index) {
     return BottomNavigationBarItem(
         icon: Icon(
@@ -82,8 +79,6 @@ class FooterState extends State<Footer> {
       _bottomNavigationBarItems[index] = _UpdateActiveState(index);
       _selectedIndex = index;
     });
-    print(_selectedIndex);
-    print(index);
     Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => pages[index])

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import "package:intl/intl.dart";
 import 'package:flutter/material.dart';
 import 'package:present_thanks/header.dart';
@@ -33,19 +34,19 @@ class StopwatchPage extends StatefulWidget {
 class _StopwatchPageState extends State<StopwatchPage> {
   late Timer _timer;
   final _formatter = DateFormat('HH:mm:ss');
-
   var StartTime = 0;
   var NowTime = 0;
   var RunState = 0; // 0:stop, 1:run
-
-  String selectedHousework = "aaa";
+  String selectedHousework = "";
   String partnerName = "";
   int currentPoint = 0;
-  String uid = "";
+  late String loggedInUserName;
+  late String loggedInUserID;
+  bool _isStartButtonEnabled = true;
+  bool _isStopButtonEnabled = false;
 
   @override
   void initState() {
-    print("ppp");
     super.initState();
     _timer = Timer.periodic(
       Duration(milliseconds: 123), // 数値小->高速に時間刻む
@@ -54,14 +55,14 @@ class _StopwatchPageState extends State<StopwatchPage> {
     init();
   }
 
-  final _auth = FirebaseAuth.instance;
-  String uemail = '';
-
   void init() async {
-    // ログインしているユーザーの情報を取得する
-    final user = await _auth.currentUser!;
-    uid = user.uid;
-    uemail = user.email!;
+    try {
+      final result = await LineSDK.instance.getProfile();
+      loggedInUserName = result.displayName;
+      loggedInUserID = result.userId;
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
 
     // shared_preferenceから値を取得する
     final prefs = await SharedPreferences.getInstance();
@@ -70,7 +71,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
       partnerName = prefs.getString('partnerName')!;
       currentPoint = prefs.getInt('currentPoint')!;
     });
-    print('$selectedHouseworkです！！');
   }
 
   @override
@@ -86,6 +86,9 @@ class _StopwatchPageState extends State<StopwatchPage> {
     }
 
     void _StartButton(){
+      _isStartButtonEnabled = false;
+      _isStopButtonEnabled = true;
+
       if (RunState == 0){
         StartTime = DateTime.now().millisecondsSinceEpoch.toInt();
         NowTime = DateTime.now().millisecondsSinceEpoch.toInt();
@@ -173,7 +176,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SizedBox(
-          width: 150,
+          width: size.width*0.4,
           child: ElevatedButton(
             child: const Text('開始'),
             style: ElevatedButton.styleFrom(
@@ -181,12 +184,14 @@ class _StopwatchPageState extends State<StopwatchPage> {
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
-            onPressed: _StartButton,
+            onPressed: !_isStartButtonEnabled ? null : () {
+              _StartButton();
+            }
           ),
         ),
 
         SizedBox(
-          width: 150,
+          width: size.width*0.4,
           child: ElevatedButton(
             child: const Text('終了'),
             style: ElevatedButton.styleFrom(
@@ -194,18 +199,16 @@ class _StopwatchPageState extends State<StopwatchPage> {
               onPrimary: Colors.black,
               shape: const StadiumBorder(),
             ),
-            onPressed: () async {
-              FirebaseFirestore.instance.collection('users').doc(uid).update({
+            onPressed: !_isStopButtonEnabled ? null : () async {
+              FirebaseFirestore.instance.collection('users').doc(loggedInUserID).update({
                 'point': currentPoint + houseworkMinutes,
               });
-
               _StopButton();
               showAlertToFinish();
             },
-    ),
-    ),
-
-    ],
+          ),
+        ),
+      ],
     );
 
 
@@ -233,7 +236,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
         ),
         Divider(),
         Text(
-          '相手の名前：$partnerName',
+          '相手の名前：$partnerNameさん',
           style: TextStyle(fontSize: 25),
         ),
         Divider(),
