@@ -129,7 +129,7 @@ class HouseworkSelectPageState extends State<HouseworkSelectPage> {
           child: Column(
             children: [
               Padding(padding: EdgeInsets.only(top: size.height*0.02)),
-              Text('あり贈さんのありがとうポイントは'),
+              Text('$loggedInUserNameさんのありがとうポイントは'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
